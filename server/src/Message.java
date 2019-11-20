@@ -6,6 +6,14 @@ public class Message {
         BCST,
         QUIT,
         PONG,
+        LS,
+        DM,
+        CG,
+        LG,
+        JG,
+        BCSTG,
+        LEAVE,
+        KICK,
         UNKOWN;
     }
 
@@ -32,7 +40,6 @@ public class Message {
         }
         return result;
     }
-
 
     public String getPayload() {
         if (getMessageType().equals(MessageType.UNKOWN)) {

@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.Socket;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ClientThread implements Runnable {
     private DataInputStream is;
@@ -72,7 +74,7 @@ public class ClientThread implements Runnable {
                             this.state = ServerState.CONNECTED;
                             this.username = message.getPayload();
                             writeToClient("+OK " + message.getLine());
-
+                            break;
 
                         case BCST:
                             for (ClientThread ct : server.threads) {
@@ -81,22 +83,54 @@ public class ClientThread implements Runnable {
                                 }
                             }
                             writeToClient("+OK " + message.getLine());
+                            break;
 
+                        case LS:
+                            writeToClient("LS " + server.getUsers());
+                            break;
+
+                        case LG:
+                            writeToClient("LG " + server.getGroups());
+                            break;
+
+                        case JG:
+                            joinGroup(message.getPayload());
+                            break;
+
+                        case LEAVE:
+                            leaveGroup(message.getPayload());
+                            break;
+
+                        case CG:
+                            Group group = new Group(this, message.getPayload());
+                            server.addGroup(group);
+                            break;
+
+                        case DM:
+                            sendDM(message.getPayload());
+                            break;
+
+                        case KICK:
+                            kickUser(message.getPayload());
+                            break;
 
                         case QUIT:
                             this.state = ServerState.FINISHED;
                             writeToClient("+OK Goodbye");
+                            break;
 
+                        case BCSTG:
+                            broadcastGroup(message.getPayload());
+                            break;
 
                         case PONG:
                             this.pongReceived = true;
-
+                            break;
 
                         case UNKOWN:
                             writeToClient("-ERR Unkown command");
+                            break;
                     }
-
-
                 }
             }
             server.threads.remove(this);
@@ -105,7 +139,6 @@ public class ClientThread implements Runnable {
             System.out.println("Server Exception: " + e.getMessage());
         }
     }
-
 
     public void kill() {
         try {
@@ -118,17 +151,113 @@ public class ClientThread implements Runnable {
         this.state = ServerState.FINISHED;
     }
 
+    private void joinGroup(String message){
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            String groupName = jsonObject.getString("name");
+
+            Group group = server.getGroupByName(groupName);
+
+            if(group != null){
+                group.addMember(this);
+                this.writeToClient("+OKDJG " + groupName);
+            }else{
+                this.writeToClient("-ERR group not found");
+            }
+
+        }catch (JSONException err){
+            err.printStackTrace();
+        }
+    }
+
+    private void leaveGroup(String message){
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            String groupName = jsonObject.getString("name");
+
+            Group group = server.getGroupByName(groupName);
+
+            if(group != null){
+                group.removeMember(this);
+                this.writeToClient("+OKLG " + groupName);
+            }else{
+                this.writeToClient("-ERR group not found");
+            }
+
+        }catch (JSONException err){
+            err.printStackTrace();
+        }
+    }
+
+    private void kickUser(String message){
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            String groupName = jsonObject.getString("name");
+            String userName = jsonObject.getString("user");
+
+            Group group = server.getGroupByName(groupName);
+            ClientThread user = server.getClientByName(userName);
+
+            if(group != null){
+                group.removeMember(user);
+                this.writeToClient("+OKKICK " + groupName);
+            }else{
+                this.writeToClient("-ERR group not found");
+            }
+
+        }catch (JSONException err){
+            err.printStackTrace();
+        }
+    }
+
+    private void broadcastGroup(String message){
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            String groupName = jsonObject.getString("name");
+            String messageText = jsonObject.getString("message");
+
+            Group group = server.getGroupByName(groupName);
+
+            if(group != null){
+                group.broadCastMessage(messageText);
+                this.writeToClient("+OKBCSTG " + groupName);
+            }else{
+                this.writeToClient("-ERR group not found");
+            }
+
+        }catch (JSONException err){
+            err.printStackTrace();
+        }
+    }
 
     void writeToClient(String message) {
         PrintWriter writer = new PrintWriter(this.os);
         writer.println(message);
         writer.flush();
 
-
         boolean isIncomingMessage = false;
         logMessage(isIncomingMessage, message);
     }
 
+    private void sendDM(String message){
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            String reveiverName = jsonObject.getString("name");
+            String payload = jsonObject.getString("message");
+
+            ClientThread receiver = server.getClientByName(reveiverName);
+
+            if(receiver != null){
+                receiver.writeToClient("DM { username: '" + this.getUsername() + "', message: '" + payload + "'}");
+                this.writeToClient("+OKDM " + payload);
+            }else{
+                this.writeToClient("-ERR user not found");
+            }
+
+        }catch (JSONException err){
+            err.printStackTrace();
+        }
+    }
 
     private void logMessage(boolean isIncoming, String message) {
         String logMessage;
