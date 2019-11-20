@@ -39,11 +39,9 @@ public class Message {
             return this.line;
         }
 
-
         if (this.line == null || this.line.length() < getMessageType().name().length() + 1) {
             return "";
         }
-
 
         return this.line.substring(getMessageType().name().length() + 1);
     }
