@@ -51,6 +51,10 @@ public class Application {
             {
                 try
                 {
+                    if(username == null){
+                        System.out.println("Enter a username:");
+                    }
+
                     PrintWriter writer = new PrintWriter(out);
                     line = input.readLine();
 
@@ -100,10 +104,11 @@ public class Application {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
                 while ((fromServer = reader.readLine()) != null) {
-                    System.out.println("Server: " + fromServer);
+                    //System.out.println("Server: " + fromServer);
 
                     if(fromServer.contains("-ERR user")){
                         command = commands.HELO.toString();
+                        username = null;
                     }
                     else if(fromServer.contains("BCST")){
                         if(!fromServer.contains("+OK")){
