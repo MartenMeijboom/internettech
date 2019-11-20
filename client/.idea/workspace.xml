@@ -2,15 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9e8bfa45-609c-4fbe-8749-a4678ed6f64e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../server/src/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/Message.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/Server.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/ServerConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../server/src/ServerState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/client/META-INF/client.kotlin_module" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../server/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/Message.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../server/src/ServerConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/../server/src/ServerConfiguration.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -32,8 +28,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Application.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1331">
-              <caret line="112" column="25" selection-start-line="112" selection-start-column="25" selection-end-line="112" selection-end-column="25" />
+            <state relative-caret-position="156">
+              <caret line="47" column="29" lean-forward="true" selection-start-line="47" selection-start-column="29" selection-end-line="47" selection-end-column="29" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -62,10 +58,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="227" />
-    <option name="y" value="-13" />
-    <option name="width" value="1548" />
-    <option name="height" value="1038" />
+    <option name="x" value="-9" />
+    <option name="y" value="-9" />
+    <option name="width" value="1938" />
+    <option name="height" value="1048" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -156,12 +152,12 @@
       <workItem from="1574167765647" duration="73000" />
       <workItem from="1574168582232" duration="101000" />
       <workItem from="1574247262674" duration="1015000" />
-      <workItem from="1574251461426" duration="252000" />
+      <workItem from="1574251461426" duration="1791000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7454000" />
+    <option name="totallyTimeSpent" value="8993000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
@@ -175,7 +171,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.74068767" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.44192636" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39952904" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -204,8 +200,8 @@
     <entry file="file://$PROJECT_DIR$/src/protocol/Helo.java" />
     <entry file="file://$PROJECT_DIR$/src/Application.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1331">
-          <caret line="112" column="25" selection-start-line="112" selection-start-column="25" selection-end-line="112" selection-end-column="25" />
+        <state relative-caret-position="156">
+          <caret line="47" column="29" lean-forward="true" selection-start-line="47" selection-start-column="29" selection-end-line="47" selection-end-column="29" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

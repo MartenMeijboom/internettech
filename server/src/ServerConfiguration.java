@@ -1,7 +1,4 @@
-
-
-public class ServerConfiguration
-{
+public class ServerConfiguration {
     public final String WELCOME_MESSAGE = "Welkom to WhatsUpp!";
     public final String VERSION = "1.3";
     public final int DEFAULT_SERVER_PORT = 1337;
@@ -21,29 +18,37 @@ public class ServerConfiguration
     private boolean sendPong = true;
 
 
-    public ServerConfiguration() { this.serverPort = 1337; }
+    public ServerConfiguration() {
+        this.serverPort = 1337;
+    }
 
 
-
-    public int getServerPort() { return this.serverPort; }
-
-
-
-    public void setServerPort(int serverPort) { this.serverPort = serverPort; }
+    public int getServerPort() {
+        return this.serverPort;
+    }
 
 
-
-    public boolean isShowColors() { return this.showColors; }
-
-
-
-    public void setShowColors(boolean showColors) { this.showColors = showColors; }
+    public void setServerPort(int serverPort) {
+        this.serverPort = serverPort;
+    }
 
 
+    public boolean isShowColors() {
+        return this.showColors;
+    }
 
-    public boolean isSendPong() { return this.sendPong; }
+
+    public void setShowColors(boolean showColors) {
+        this.showColors = showColors;
+    }
 
 
+    public boolean isSendPong() {
+        return this.sendPong;
+    }
 
-    public void setSendPong(boolean sendPong) { this.sendPong = sendPong; }
+
+    public void setSendPong(boolean sendPong) {
+        this.sendPong = sendPong;
+    }
 }

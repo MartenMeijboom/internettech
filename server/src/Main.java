@@ -1,5 +1,4 @@
-public class Main
-{
+public class Main {
     public static void main(String[] args) {
         System.out.println("Usage:");
         System.out.println("\t--no-colors: log debug messages without colors in the console.");
@@ -29,8 +28,7 @@ public class Main
                     System.out.println(" ERROR: Port is not a valid number.");
                 }
                 shouldParsePort = false;
-            }
-            else if (arg.equals("--no-colors")) {
+            } else if (arg.equals("--no-colors")) {
                 config.setShowColors(false);
             } else if (arg.equals("--no-pong")) {
                 config.setSendPong(false);
@@ -53,7 +51,8 @@ public class Main
 
         System.out.println("Starting the server:");
         System.out.println("-------------------------------");
-        config.getClass(); System.out.println("\tversion:\t" + "1.3");
+        config.getClass();
+        System.out.println("\tversion:\t" + "1.3");
         System.out.println("\thost:\t\t127.0.0.1");
         System.out.println("\tport:\t\t" + config.getServerPort());
         System.out.println("-------------------------------");

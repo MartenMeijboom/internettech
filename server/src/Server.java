@@ -12,32 +12,27 @@ import java.util.Random;
 import java.util.Set;
 
 public class Server {
-    private final int PING_TIMEOUT = 3000; private ServerSocket serverSocket; private Set<ClientThread> threads;
+    private final int PING_TIMEOUT = 3000;
+    private ServerSocket serverSocket;
+    private Set<ClientThread> threads;
     private ServerConfiguration conf;
 
-    public Server(ServerConfiguration conf) { this.conf = conf; }
-
-
-
-
-
-
+    public Server(ServerConfiguration conf) {
+        this.conf = conf;
+    }
 
     public void run() {
         try {
             this.serverSocket = new ServerSocket(this.conf.getServerPort());
             this.threads = new HashSet<>();
 
-
             while (true) {
                 Socket socket = this.serverSocket.accept();
-
 
                 ClientThread ct = new ClientThread(socket);
                 this.threads.add(ct);
                 (new Thread(ct)).start();
                 System.out.println("Num clients: " + this.threads.size());
-
 
                 if (this.conf.isSendPong()) {
                     PingClientThread dct = new PingClientThread(ct);
@@ -52,13 +47,14 @@ public class Server {
 
 
     private class PingClientThread
-            implements Runnable
-    {
+            implements Runnable {
         Server.ClientThread ct;
 
         private boolean shouldPing = true;
 
-        PingClientThread(Server.ClientThread ct) { this.ct = ct; }
+        PingClientThread(Server.ClientThread ct) {
+            this.ct = ct;
+        }
 
 
         public void run() {
@@ -86,8 +82,7 @@ public class Server {
 
 
     private class ClientThread
-            implements Runnable
-    {
+            implements Runnable {
         private DataInputStream is;
 
         private OutputStream os;
@@ -104,8 +99,9 @@ public class Server {
         }
 
 
-        public String getUsername() { return this.username; }
-
+        public String getUsername() {
+            return this.username;
+        }
 
 
         public void run() {
@@ -116,7 +112,8 @@ public class Server {
 
 
                 this.state = ServerState.CONNECTING;
-                Server.this.conf.getClass(); String welcomeMessage = "HELO " + "Welkom to WhatsUpp!";
+                Server.this.conf.getClass();
+                String welcomeMessage = "HELO " + "Welkom to WhatsUpp!";
                 writeToClient(welcomeMessage);
 
                 while (!this.state.equals(ServerState.FINISHED)) {
@@ -148,13 +145,12 @@ public class Server {
                                     }
                                 }
                                 if (userExists) {
-                                    writeToClient("-ERR user already logged in"); continue;
+                                    writeToClient("-ERR user already logged in");
+                                    continue;
                                 }
                                 this.state = ServerState.CONNECTED;
                                 this.username = message.getPayload();
                                 writeToClient("+OK " + message.getLine());
-
-
 
 
                             case BCST:
@@ -190,9 +186,6 @@ public class Server {
         }
 
 
-
-
-
         public void kill() {
             try {
                 System.out.println("[DROP CONNECTION] " + getUsername());
@@ -203,10 +196,6 @@ public class Server {
             }
             this.state = ServerState.FINISHED;
         }
-
-
-
-
 
 
         private void writeToClient(String message) {
@@ -220,21 +209,16 @@ public class Server {
         }
 
 
-
-
-
-
-
-
         private void logMessage(boolean isIncoming, String message) {
             String logMessage;
-            Server.this.conf.getClass(); String colorCode = "\033[32m";
+            Server.this.conf.getClass();
+            String colorCode = "\033[32m";
             String directionString = "<< ";
             if (isIncoming) {
-                Server.this.conf.getClass(); colorCode = "\033[31m";
+                Server.this.conf.getClass();
+                colorCode = "\033[31m";
                 directionString = ">> ";
             }
-
 
 
             if (getUsername() == null) {
@@ -245,7 +229,8 @@ public class Server {
 
 
             if (Server.this.conf.isShowColors()) {
-                Server.this.conf.getClass(); System.out.println(colorCode + logMessage + "\033[0m");
+                Server.this.conf.getClass();
+                System.out.println(colorCode + logMessage + "\033[0m");
             } else {
                 System.out.println(logMessage);
             }

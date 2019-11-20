@@ -10,18 +10,14 @@ public class Message {
     }
 
 
+    public Message(String line) {
+        this.line = line;
+    }
 
 
-    public Message(String line) { this.line = line; }
-
-
-
-    public String getLine() { return this.line; }
-
-
-
-
-
+    public String getLine() {
+        return this.line;
+    }
 
 
     public MessageType getMessageType() {
@@ -38,19 +34,10 @@ public class Message {
     }
 
 
-
-
-
-
-
-
-
     public String getPayload() {
         if (getMessageType().equals(MessageType.UNKOWN)) {
             return this.line;
         }
-
-
 
 
         if (this.line == null || this.line.length() < getMessageType().name().length() + 1) {
