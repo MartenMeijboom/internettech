@@ -24,3 +24,4 @@ client/.idea/misc.xml
 server/.idea/misc.xml
 client/.idea/workspace.xml
 server/.idea/workspace.xml
+*.xml
