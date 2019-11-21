@@ -13,6 +13,7 @@ public class Group {
         this.owner = owner;
         this.id = idList++;
         this.name = name;
+        members =new ArrayList<>();
     }
 
     public void addMember(ClientThread member){
@@ -24,6 +25,7 @@ public class Group {
     }
 
     public void broadCastMessage(String line){
+        owner.writeToClient("BCSTG " + line);
         for (ClientThread t:members) {
             t.writeToClient("BCSTG " + line);
         }
@@ -31,6 +33,10 @@ public class Group {
 
     public String getName(){
         return name;
+    }
+
+    public ClientThread getOwner(){
+        return owner;
     }
 
     public int getAmountOfMembers(){

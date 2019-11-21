@@ -153,14 +153,11 @@ public class ClientThread implements Runnable {
 
     private void joinGroup(String message){
         try {
-            JSONObject jsonObject = new JSONObject(message);
-            String groupName = jsonObject.getString("name");
-
-            Group group = server.getGroupByName(groupName);
+            Group group = server.getGroupByName(message);
 
             if(group != null){
                 group.addMember(this);
-                this.writeToClient("+OKDJG " + groupName);
+                this.writeToClient("+OKDJG " + message);
             }else{
                 this.writeToClient("-ERR group not found");
             }
@@ -172,14 +169,11 @@ public class ClientThread implements Runnable {
 
     private void leaveGroup(String message){
         try {
-            JSONObject jsonObject = new JSONObject(message);
-            String groupName = jsonObject.getString("name");
-
-            Group group = server.getGroupByName(groupName);
+            Group group = server.getGroupByName(message);
 
             if(group != null){
                 group.removeMember(this);
-                this.writeToClient("+OKLG " + groupName);
+                this.writeToClient("+OKLG " + message);
             }else{
                 this.writeToClient("-ERR group not found");
             }
@@ -199,8 +193,12 @@ public class ClientThread implements Runnable {
             ClientThread user = server.getClientByName(userName);
 
             if(group != null){
-                group.removeMember(user);
-                this.writeToClient("+OKKICK " + groupName);
+                if(group.getOwner().equals(this)){
+                    group.removeMember(user);
+                    this.writeToClient("+OKKICK " + groupName);
+                }else{
+                    this.writeToClient("-ERR you are not the owner of this group");
+                }
             }else{
                 this.writeToClient("-ERR group not found");
             }
@@ -219,7 +217,7 @@ public class ClientThread implements Runnable {
             Group group = server.getGroupByName(groupName);
 
             if(group != null){
-                group.broadCastMessage(messageText);
+                group.broadCastMessage("{groupname: '" + groupName + "', sender: '" + this.username + "', message: '" + messageText + "'}");
                 this.writeToClient("+OKBCSTG " + groupName);
             }else{
                 this.writeToClient("-ERR group not found");

@@ -33,7 +33,6 @@ public class Application {
     private void connect(String ip, int port){
         try{
             socket = new Socket(ip, port);
-            System.out.println("Connected");
 
             input = new DataInputStream(System.in);
             out = socket.getOutputStream();
@@ -54,6 +53,7 @@ public class Application {
             {
                 try
                 {
+                    Thread.sleep(33);
                     if(username == null){
                         System.out.println("Enter a username:");
                         PrintWriter writer = new PrintWriter(out);
@@ -75,10 +75,11 @@ public class Application {
                         System.out.println("4) Show a list of groups");
                         System.out.println("5) Create a group");
                         System.out.println("6) Join a group");
-                        System.out.println("7) Leave a group");
-                        System.out.println("8) Kick someone from my group");
+                        System.out.println("7) Send message to group");
+                        System.out.println("8) Leave a group");
+                        System.out.println("9) Kick someone from my group");
                         System.out.println("");
-                        System.out.println("What would you like to do? (1 / 8)");
+                        System.out.println("What would you like to do? (1 / 9)");
 
 
                         int choice = Integer.parseInt(input.readLine());
@@ -91,16 +92,70 @@ public class Application {
 
                                 writer.println("BCST " + userInput);
                                 writer.flush();
-                                System.out.println("[" + username + "] " + userInput);
                                 break;
                             case 2:
                                 writer.println("LS");
                                 writer.flush();
                                 break;
+                            case 3:
+                                System.out.println("To who would you like to send the message?");
+                                userInput = input.readLine();
+                                String receiver = userInput;
+                                System.out.println("What would you like to send?");
+                                userInput = input.readLine();
+                                String message = userInput;
+
+                                writer.println("DM " + "{name: '" + receiver + "', message: '" + message + "'}");
+                                writer.flush();
+                                break;
+                            case 4:
+                                writer.println("LG");
+                                writer.flush();
+                                break;
+                            case 5:
+                                System.out.println("How would you like to name the new group?");
+                                userInput = input.readLine();
+                                writer.println("CG " + userInput);
+                                writer.flush();
+                                break;
+                            case 6:
+                                System.out.println("What group would you like to join?");
+                                userInput = input.readLine();
+                                writer.println("JG " + userInput);
+                                writer.flush();
+                                break;
+                            case 7:
+                                System.out.println("To what group would you like to send the message?");
+                                userInput = input.readLine();
+                                String groupname = userInput;
+                                System.out.println("What would you like to send?");
+                                userInput = input.readLine();
+                                message = userInput;
+
+                                writer.println("BCSTG " + "{name: '" + groupname + "', message: '" + message + "'}");
+                                writer.flush();
+                                break;
+                            case 8:
+                                System.out.println("What group would you like to leave?");
+                                userInput = input.readLine();
+                                writer.println("LEAVE " + userInput);
+                                writer.flush();
+                                break;
+                            case 9:
+                                System.out.println("From what group would you like to kick someone");
+                                userInput = input.readLine();
+                                groupname = userInput;
+                                System.out.println("Who would you like to kick?");
+                                userInput = input.readLine();
+                                String name = userInput;
+
+                                writer.println("KICK " + "{name: '" + groupname + "', user: '" + name + "'}");
+                                writer.flush();
+                                break;
                         }
                     }
                 }
-                catch(IOException e)
+                catch(Exception e)
                 {
                     System.out.println(e);
                 }
@@ -133,14 +188,15 @@ public class Application {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
                 while ((fromServer = reader.readLine()) != null) {
-                    System.out.println("Server: " + fromServer);
+                    //System.out.println("Server: " + fromServer);
 
                     Message message = new Message(fromServer);
+                    JSONArray jsonArray;
 
                     switch (message.getMessageType()) {
 
                         case HELO:
-
+                            System.out.println("Connected");
                             break;
 
                         case BCST:
@@ -149,7 +205,7 @@ public class Application {
 
                         case LS:
                             System.out.println("List of users that are currently online:");
-                            JSONArray jsonArray = new JSONArray(message.getPayload());
+                            jsonArray = new JSONArray(message.getPayload());
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String userName = jsonObject.getString("name");
@@ -158,37 +214,36 @@ public class Application {
                             break;
 
                         case LG:
-                            break;
-
-                        case JG:
-                            break;
-
-                        case LEAVE:
-                            break;
-
-                        case CG:
-
+                            if(fromServer.length() > 4){
+                                System.out.println("List of groups:");
+                                jsonArray = new JSONArray(message.getPayload());
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                    String groupName = jsonObject.getString("name");
+                                    System.out.println(groupName);
+                                }
+                            }else {
+                                System.out.println("No groups available");
+                            }
                             break;
 
                         case DM:
-                            break;
-
-                        case KICK:
-
-                            break;
-
-                        case QUIT:
-
+                            JSONObject jsonObject = new JSONObject(message.getPayload());
+                            System.out.println("DM [" + jsonObject.getString("username") + "] " + jsonObject.getString("message"));
                             break;
 
                         case BCSTG:
-
+                            jsonObject = new JSONObject(message.getPayload());
+                            System.out.println("GROUP [" + jsonObject.getString("groupname") + "] [" + jsonObject.getString("sender") + "] " + jsonObject.getString("message"));
                             break;
 
                         case PING:
                             pong();
                             break;
 
+                        case DSCN:
+                            System.out.println("Disconnected");
+                            break;
                         case UNKOWN:
 
                             break;
