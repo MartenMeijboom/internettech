@@ -11,23 +11,28 @@ public class Application {
     private OutputStream out = null;
     private InputStream in;
 
-    private enum commands{
-        HELO,
-        BCST,
-        PONG,
-        QUIT
-    };
     private String command;
     private String username;
 
+    private static boolean compatMode = false;
+
     public static void main(String[] args) {
+        if(args != null && args.length > 0){
+            if(args[0].equals("--compat-mode")){
+                compatMode = true;
+            }
+        }
         new Application().run("127.0.0.1", 1337);
     }
 
     private void run(String ip, int port){
         connect(ip, port);
-        readUserInput();
         readServerMessages();
+        if(compatMode){
+            readUserInputCompatMode();
+        }else {
+            readUserInput();
+        }
     }
 
     private void connect(String ip, int port){
@@ -38,11 +43,44 @@ public class Application {
             out = socket.getOutputStream();
             in = socket.getInputStream();
 
-            command = commands.HELO.toString();
+            command = "HELO";
         }
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    private void readUserInputCompatMode(){
+        new Thread(() -> {
+            String line = "";
+            // keep reading until "Close" is entered
+            while (!line.equals("Close"))
+            {
+                try{
+                    Thread.sleep(33);
+                    if(username == null) {
+                        System.out.println("Enter username:");
+                        PrintWriter writer = new PrintWriter(out);
+                        line = input.readLine();
+
+                        if (line.matches("[a-zA-Z0-9_]{3,14}")) {
+                            writer.println(command + " " + line);
+                            writer.flush();
+                            username = line;
+                        }
+                    }else{
+                        System.out.println("Type message and hit enter");
+                        PrintWriter writer = new PrintWriter(out);
+                        String userInput = input.readLine();
+                        writer.println("BCST " + userInput);
+                        writer.flush();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            closeConnection();
+        }).start();
     }
 
     private void readUserInput(){
@@ -161,24 +199,28 @@ public class Application {
                 }
             }
 
-            // close the connection
-            try
-            {
-                command = commands.QUIT.toString();
-
-                PrintWriter writer = new PrintWriter(out);
-                writer.println(command);
-                writer.flush();
-
-                input.close();
-                out.close();
-                socket.close();
-            }
-            catch(IOException i)
-            {
-                System.out.println(i);
-            }
+            closeConnection();
         }).start();
+    }
+
+    private void closeConnection(){
+        // close the connection
+        try
+        {
+            command = "QUIT";
+
+            PrintWriter writer = new PrintWriter(out);
+            writer.println(command);
+            writer.flush();
+
+            input.close();
+            out.close();
+            socket.close();
+        }
+        catch(IOException i)
+        {
+            System.out.println(i);
+        }
     }
 
     private void readServerMessages(){
@@ -260,7 +302,7 @@ public class Application {
     private void pong(){
             String temp = command;
 
-            command = commands.PONG.toString();
+            command = "PONG";
 
             PrintWriter writer = new PrintWriter(out);
             writer.println(command);
