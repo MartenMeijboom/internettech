@@ -12,7 +12,7 @@ public class Application {
     private InputStream in;
 
     private String command;
-    private String username;
+    private static String username;
 
     private static boolean compatMode = false;
 
@@ -297,6 +297,10 @@ public class Application {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    public static void userNameError(){
+        username = null;
     }
 
     private void pong(){

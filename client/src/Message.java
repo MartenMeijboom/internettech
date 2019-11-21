@@ -5,15 +5,10 @@ public class Message {
         HELO,
         BCST,
         DSCN,
-        QUIT,
         LS,
         DM,
-        CG,
         LG,
-        JG,
         BCSTG,
-        LEAVE,
-        KICK,
         PING,
         UNKOWN;
     }
@@ -35,6 +30,11 @@ public class Message {
             if (this.line != null && this.line.length() > 0 && !line.contains("+") && !line.contains("-")) {
                 String[] splits = this.line.split("\\s+");
                 result = MessageType.valueOf(splits[0]);
+            }else if(line.contains("-")){
+                System.out.println(line);
+                if(line.equals("-ERR user already logged in")){
+                    Application.userNameError();
+                }
             }
         } catch (IllegalArgumentException iaex) {
             System.out.println("[ERROR] Unknown command");
