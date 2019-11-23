@@ -196,6 +196,7 @@ public class ClientThread implements Runnable {
                 if(group.getOwner().equals(this)){
                     group.removeMember(user);
                     this.writeToClient("+OKKICK " + groupName);
+                    user.writeToClient("BCST You have been kicked from " + groupName);
                 }else{
                     this.writeToClient("-ERR you are not the owner of this group");
                 }

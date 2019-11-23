@@ -17,11 +17,19 @@ public class Group {
     }
 
     public void addMember(ClientThread member){
-        members.add(member);
+        if(members.contains(member)){
+            member.writeToClient("-ERR already a member of this group");
+        }else{
+            members.add(member);
+        }
     }
 
     public void removeMember(ClientThread member){
-        members.remove(member);
+        if(members.contains(member)){
+            members.remove(member);
+        }else {
+            member.writeToClient("-ERR not a member");
+        }
     }
 
     public void broadCastMessage(String line){
