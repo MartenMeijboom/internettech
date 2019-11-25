@@ -1,11 +1,11 @@
 import java.util.Random;
 
-public class PingClientThread implements Runnable {
+public class PingThread implements Runnable {
     ClientThread ct;
 
     private boolean shouldPing = true;
 
-    PingClientThread(ClientThread ct) {
+    PingThread(ClientThread ct) {
         this.ct = ct;
     }
 

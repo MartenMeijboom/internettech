@@ -1,14 +1,7 @@
-
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 public class Server {
@@ -37,7 +30,7 @@ public class Server {
                 System.out.println("Num clients: " + this.threads.size());
 
                 if (this.conf.isSendPong()) {
-                    PingClientThread dct = new PingClientThread(ct);
+                    PingThread dct = new PingThread(ct);
                     (new Thread(dct)).start();
                 }
             }

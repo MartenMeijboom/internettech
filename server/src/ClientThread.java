@@ -192,16 +192,20 @@ public class ClientThread implements Runnable {
             Group group = server.getGroupByName(groupName);
             ClientThread user = server.getClientByName(userName);
 
-            if(group != null){
-                if(group.getOwner().equals(this)){
-                    group.removeMember(user);
-                    this.writeToClient("+OKKICK " + groupName);
-                    user.writeToClient("BCST You have been kicked from " + groupName);
+            if(user != null){
+                if(group != null){
+                    if(group.getOwner().equals(this)){
+                        group.removeMember(user);
+                        this.writeToClient("+OKKICK " + groupName);
+                        user.writeToClient("BCST You have been kicked from " + groupName);
+                    }else{
+                        this.writeToClient("-ERR you are not the owner of this group");
+                    }
                 }else{
-                    this.writeToClient("-ERR you are not the owner of this group");
+                    this.writeToClient("-ERR group not found");
                 }
             }else{
-                this.writeToClient("-ERR group not found");
+                this.writeToClient("-ERR user not found");
             }
 
         }catch (JSONException err){

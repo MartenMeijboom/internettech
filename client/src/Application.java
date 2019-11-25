@@ -85,6 +85,7 @@ public class Application {
 
     private void readUserInput(){
         new Thread(() -> {
+            boolean first = true;
             String line = "";
             // keep reading until "Close" is entered
             while (!line.equals("Close"))
@@ -103,22 +104,25 @@ public class Application {
                             username = line;
                         }
                     }else{
-                        System.out.println("");
-                        System.out.println("Available options:");
-                        System.out.println(" - Users");
-                        System.out.println("1) Broadcast message to all users");
-                        System.out.println("2) Show list of users");
-                        System.out.println("3) Send private message to a user");
-                        System.out.println(" - Groups");
-                        System.out.println("4) Show a list of groups");
-                        System.out.println("5) Create a group");
-                        System.out.println("6) Join a group");
-                        System.out.println("7) Send message to group");
-                        System.out.println("8) Leave a group");
-                        System.out.println("9) Kick someone from my group");
-                        System.out.println("");
-                        System.out.println("What would you like to do? (1 / 9)");
+                        if(first){
+                            System.out.println("");
+                            System.out.println("Available options:");
+                            System.out.println(" - Users");
+                            System.out.println("1) Broadcast message to all users");
+                            System.out.println("2) Show list of users");
+                            System.out.println("3) Send private message to a user");
+                            System.out.println(" - Groups");
+                            System.out.println("4) Show a list of groups");
+                            System.out.println("5) Create a group");
+                            System.out.println("6) Join a group");
+                            System.out.println("7) Send message to group");
+                            System.out.println("8) Leave a group");
+                            System.out.println("9) Kick someone from my group");
+                            System.out.println("");
+                            first = false;
+                        }
 
+                        System.out.println("What would you like to do? (1 / 9)");
 
                         int choice = Integer.parseInt(input.readLine());
                         PrintWriter writer = new PrintWriter(out);
