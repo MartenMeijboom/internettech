@@ -27,7 +27,6 @@ public class Server {
                 ClientThread ct = new ClientThread(socket, this);
                 this.threads.add(ct);
                 (new Thread(ct)).start();
-                System.out.println("Num clients: " + this.threads.size());
 
                 if (this.conf.isSendPong()) {
                     PingThread dct = new PingThread(ct);
