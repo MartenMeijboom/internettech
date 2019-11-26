@@ -10,6 +10,8 @@ public class Message {
         LG,
         BCSTG,
         PING,
+        SESSIONKEY,
+        PUBLICKEY,
         UNKOWN;
     }
 
@@ -27,6 +29,12 @@ public class Message {
     public MessageType getMessageType() {
         MessageType result = MessageType.UNKOWN;
         try {
+            if(this.line.contains("PUBLICKEY")){
+                return MessageType.PUBLICKEY;
+            }else if(this.line.contains("SESSIONKEY")){
+                return MessageType.SESSIONKEY;
+            }
+
             if (this.line != null && this.line.length() > 0 && !line.contains("+") && !line.contains("-")) {
                 String[] splits = this.line.split("\\s+");
                 result = MessageType.valueOf(splits[0]);
