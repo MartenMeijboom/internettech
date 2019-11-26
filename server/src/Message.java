@@ -14,6 +14,8 @@ public class Message {
         BCSTG,
         LEAVE,
         KICK,
+        SESSIONKEY,
+        PUBLICKEY,
         UNKOWN;
     }
 

@@ -1,8 +1,17 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Base64;
 
 public class Application {
 
@@ -12,9 +21,12 @@ public class Application {
     private InputStream in;
 
     private String command;
-    private static String username;
+
+    private static Myself myself;
 
     private static boolean compatMode = false;
+
+    private ArrayList<SomeoneElse> otherClients;
 
     public static void main(String[] args) {
         if(args != null && args.length > 0){
@@ -28,6 +40,14 @@ public class Application {
     private void run(String ip, int port){
         connect(ip, port);
         readServerMessages();
+
+        otherClients = new ArrayList<>();
+
+        myself = new Myself();
+        if(myself.getPublicKey() == null){
+            myself.generateKeys();
+        }
+
         if(compatMode){
             readUserInputCompatMode();
         }else {
@@ -58,7 +78,7 @@ public class Application {
             {
                 try{
                     Thread.sleep(33);
-                    if(username == null) {
+                    if(myself.getName() == null) {
                         System.out.println("Enter username:");
                         PrintWriter writer = new PrintWriter(out);
                         line = input.readLine();
@@ -66,7 +86,7 @@ public class Application {
                         if (line.matches("[a-zA-Z0-9_]{3,14}")) {
                             writer.println(command + " " + line);
                             writer.flush();
-                            username = line;
+                            myself.setName(line);
                         }
                     }else{
                         System.out.println("Type message and hit enter");
@@ -93,7 +113,7 @@ public class Application {
                 try
                 {
                     Thread.sleep(33);
-                    if(username == null){
+                    if(myself.getName() == null){
                         System.out.println("Enter a username:");
                         PrintWriter writer = new PrintWriter(out);
                         line = input.readLine();
@@ -101,7 +121,7 @@ public class Application {
                         if(line.matches("[a-zA-Z0-9_]{3,14}")){
                             writer.println(command + " " + line);
                             writer.flush();
-                            username = line;
+                            myself.setName(line);
                         }
                     }else{
                         if(first){
@@ -147,8 +167,7 @@ public class Application {
                                 userInput = input.readLine();
                                 String message = userInput;
 
-                                writer.println("DM " + "{name: '" + receiver + "', message: '" + message + "'}");
-                                writer.flush();
+                                sendDM(receiver, message);
                                 break;
                             case 4:
                                 writer.println("LG");
@@ -227,6 +246,58 @@ public class Application {
         }
     }
 
+    private void sendDM(String receiver, String message){
+        try {
+            SomeoneElse otherClient = getPersonByName(receiver);
+
+            Base64.Encoder encoder = Base64.getEncoder();
+
+            if (otherClient != null) {
+                if (otherClient.getSessionKey() != null) {
+                    byte[] messageArray = message.getBytes(StandardCharsets.UTF_8);
+                    byte[] encryptedMessage = myself.encrypt(messageArray);
+                    String encodedString = encoder.encodeToString(encryptedMessage);
+
+                    PrintWriter writer = new PrintWriter(out);
+                    writer.println("DM " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
+                    writer.flush();
+                }else if(otherClient.getPublicKey() != null){
+                    otherClient.generateSessionKey();
+
+                    byte[] encryptedMessage = otherClient.encryptWithPub(otherClient.getSessionKeyString().getBytes(StandardCharsets.UTF_8));
+                    String encodedString = encoder.encodeToString(encryptedMessage);
+
+                    PrintWriter writer = new PrintWriter(out);
+                    writer.println("SESSIONKEY " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
+                    writer.flush();
+
+                    System.out.println("Private connection with " + receiver + " created!");
+
+                    encryptedMessage = otherClient.encryptWithSession(message.getBytes(StandardCharsets.UTF_8));
+                    encodedString = encoder.encodeToString(encryptedMessage);
+
+                    writer = new PrintWriter(out);
+                    writer.println("DM " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
+
+                    writer.flush();
+                }else{
+                    PrintWriter writer = new PrintWriter(out);
+                    writer.println("PUBLICKEY " + " { name: '" + receiver + "', message: '" + myself.getPublicKeyString() + "' }");
+                    writer.flush();
+                }
+            }else{
+                otherClient = new SomeoneElse(receiver);
+                otherClients.add(otherClient);
+
+                PrintWriter writer = new PrintWriter(out);
+                writer.println("PUBLICKEY " + "{name: '" + receiver + "', message: '" + myself.getPublicKeyString() + "'}");
+                writer.flush();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     private void readServerMessages(){
         new Thread(() -> {
             try {
@@ -240,7 +311,6 @@ public class Application {
                     JSONArray jsonArray;
 
                     switch (message.getMessageType()) {
-
                         case HELO:
                             System.out.println("Connected");
                             break;
@@ -290,8 +360,14 @@ public class Application {
                         case DSCN:
                             System.out.println("Disconnected");
                             break;
+                        case PUBLICKEY:
+                            handlePublicKey(message);
+                            break;
+                        case SESSIONKEY:
+                            handleSessionKey(message);
+                            break;
                         case UNKOWN:
-
+                            //System.out.println("YEET");
                             break;
                     }
 
@@ -303,8 +379,73 @@ public class Application {
         }).start();
     }
 
+    private void handlePublicKey(Message message){
+        try {
+            Base64.Encoder encoder = Base64.getEncoder();
+
+            JSONObject jsonObject = new JSONObject(message.getPayload());
+            String username = jsonObject.getString("name");
+            String key = jsonObject.getString("message");
+
+            SomeoneElse user = getPersonByName(username);
+
+            if (user == null) {
+                user = new SomeoneElse(username);
+                otherClients.add(user);
+            }
+
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            X509EncodedKeySpec ks = new X509EncodedKeySpec(Base64.getDecoder().decode(key));
+            Key publicKey = kf.generatePublic(ks);
+            user.setPublicKey(publicKey);
+
+            if(user.getSessionKey() == null){
+                user.generateSessionKey();
+            }
+
+            byte[] encryptedMessage = user.encryptWithPub(user.getSessionKeyString().getBytes(StandardCharsets.UTF_8));
+            String encodedString = encoder.encodeToString(encryptedMessage);
+
+            PrintWriter writer = new PrintWriter(out);
+            writer.println("SESSIONKEY " + "{name: '" + user.getName() + "', message: '" + encodedString + "'}");
+            writer.flush();
+
+            System.out.println("Private connection with " + username + " has been initialised");
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void handleSessionKey(Message message){
+        try {
+            JSONObject jsonObject = new JSONObject(message.getPayload());
+            String username = jsonObject.getString("name");
+            String key = jsonObject.getString("message");
+
+            SomeoneElse user = getPersonByName(username);
+
+            if (user == null) {
+                user = new SomeoneElse(username);
+                otherClients.add(user);
+            }
+
+            byte[] decodedKey = Base64.getDecoder().decode(key);
+            byte[] decryptedKey = myself.decrypt(decodedKey);
+
+            SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "DES");
+
+            user.setSessionKey(originalKey);
+
+            System.out.println("Private connection with " + username + " has been initialised");
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public static void userNameError(){
-        username = null;
+        myself.setName(null);
     }
 
     private void pong(){
@@ -317,5 +458,14 @@ public class Application {
             writer.flush();
 
             command = temp;
+    }
+
+    private SomeoneElse getPersonByName(String name){
+        for (SomeoneElse e:otherClients) {
+            if(e.getName().equals(name)){
+                return e;
+            }
+        }
+        return null;
     }
 }

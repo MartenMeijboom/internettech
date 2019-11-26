@@ -127,6 +127,12 @@ public class ClientThread implements Runnable {
                             this.pongReceived = true;
                             break;
 
+                        case PUBLICKEY:
+                            handlePublicKey(message);
+                            break;
+                        case SESSIONKEY:
+                            handleSessionKey(message);
+                            break;
                         case UNKOWN:
                             writeToClient("-ERR Unkown command");
                             break;
@@ -149,6 +155,34 @@ public class ClientThread implements Runnable {
             System.out.println("Exception when closing outputstream: " + ex.getMessage());
         }
         this.state = ServerState.FINISHED;
+    }
+
+    private void handlePublicKey(Message message){
+        JSONObject jsonObject = new JSONObject(message.getPayload());
+        String username = jsonObject.getString("name");
+        String key = jsonObject.getString("message");
+
+        ClientThread user = server.getClientByName(username);
+
+        if(user != null){
+            user.writeToClient("PUBLICKEY {name: '" + this.username + "', message: '" + key + "'}" );
+        }else{
+            writeToClient("-ERR user not found");
+        }
+    }
+
+    private void handleSessionKey(Message message){
+        JSONObject jsonObject = new JSONObject(message.getPayload());
+        String username = jsonObject.getString("name");
+        String key = jsonObject.getString("message");
+
+        ClientThread user = server.getClientByName(username);
+
+        if(user != null){
+            user.writeToClient("SESSIONKEY {name: '" + this.username + "', message: '" + key + "'}" );
+        }else{
+            writeToClient("-ERR user not found");
+        }
     }
 
     private void joinGroup(String message){
