@@ -305,7 +305,7 @@ public class Application {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
                 while ((fromServer = reader.readLine()) != null) {
-                    //System.out.println("Server: " + fromServer);
+                    System.out.println("Server: " + fromServer);
 
                     Message message = new Message(fromServer);
                     JSONArray jsonArray;
@@ -345,7 +345,10 @@ public class Application {
 
                         case DM:
                             JSONObject jsonObject = new JSONObject(message.getPayload());
-                            System.out.println("DM [" + jsonObject.getString("username") + "] " + jsonObject.getString("message"));
+                            byte[] decodedMessage = Base64.getDecoder().decode(jsonObject.getString("message"));
+                            decodedMessage = getPersonByName(jsonObject.getString("username")).decrypt(decodedMessage);
+                            String messageString = new String(decodedMessage);
+                            System.out.println("DM [" + jsonObject.getString("username") + "] " + messageString);
                             break;
 
                         case BCSTG:
