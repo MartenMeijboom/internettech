@@ -12,6 +12,7 @@ import java.security.KeyFactory;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Objects;
 
 public class Application {
 
@@ -309,10 +310,19 @@ public class Application {
 
                     Message message = new Message(fromServer);
                     JSONArray jsonArray;
+                    JSONObject jsonObject;
 
                     switch (message.getMessageType()) {
                         case HELO:
                             System.out.println("Connected");
+                            break;
+
+                        case DM:
+                            jsonObject = new JSONObject(message.getPayload());
+                            byte[] decodedMessage = Base64.getDecoder().decode(jsonObject.getString("message"));
+                            decodedMessage = Objects.requireNonNull(getPersonByName(jsonObject.getString("username"))).decrypt(decodedMessage);
+                            String messageString = new String(decodedMessage);
+                            System.out.println("DM [" + jsonObject.getString("username") + "] " + messageString);
                             break;
 
                         case BCST:
@@ -323,7 +333,7 @@ public class Application {
                             System.out.println("List of users that are currently online:");
                             jsonArray = new JSONArray(message.getPayload());
                             for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                jsonObject = jsonArray.getJSONObject(i);
                                 String userName = jsonObject.getString("name");
                                 System.out.println(userName);
                             }
@@ -334,21 +344,13 @@ public class Application {
                                 System.out.println("List of groups:");
                                 jsonArray = new JSONArray(message.getPayload());
                                 for (int i = 0; i < jsonArray.length(); i++) {
-                                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                    jsonObject = jsonArray.getJSONObject(i);
                                     String groupName = jsonObject.getString("name");
                                     System.out.println(groupName);
                                 }
                             }else {
                                 System.out.println("No groups available");
                             }
-                            break;
-
-                        case DM:
-                            JSONObject jsonObject = new JSONObject(message.getPayload());
-                            byte[] decodedMessage = Base64.getDecoder().decode(jsonObject.getString("message"));
-                            decodedMessage = getPersonByName(jsonObject.getString("username")).decrypt(decodedMessage);
-                            String messageString = new String(decodedMessage);
-                            System.out.println("DM [" + jsonObject.getString("username") + "] " + messageString);
                             break;
 
                         case BCSTG:
@@ -370,7 +372,7 @@ public class Application {
                             handleSessionKey(message);
                             break;
                         case UNKOWN:
-                            //System.out.println("YEET");
+                            System.out.println("YEET");
                             break;
                     }
 

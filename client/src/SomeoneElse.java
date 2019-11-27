@@ -23,7 +23,7 @@ public class SomeoneElse {
 
     public void generateSessionKey(){
         try{
-            KeyGenerator keyGen = KeyGenerator.getInstance("DES");
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
             sessionKey = keyGen.generateKey();
         }catch (Exception e){
             e.printStackTrace();
@@ -55,14 +55,14 @@ public class SomeoneElse {
 
     public byte[] encryptWithSession(byte[] plaintext) throws Exception
     {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, sessionKey);
         return cipher.doFinal(plaintext);
     }
 
     public byte[] decrypt(byte[] ciphertext) throws Exception
     {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, sessionKey);
         return cipher.doFinal(ciphertext);
     }

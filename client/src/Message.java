@@ -35,7 +35,7 @@ public class Message {
                 return MessageType.SESSIONKEY;
             }
 
-            if (this.line != null && this.line.length() > 0 && !line.contains("+") && !line.contains("-")) {
+            if (this.line != null && this.line.length() > 0 && !line.contains("+OK") && !line.contains("-ERR")) {
                 String[] splits = this.line.split("\\s+");
                 result = MessageType.valueOf(splits[0]);
             }else if(line.contains("-")){
