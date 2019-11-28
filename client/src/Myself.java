@@ -58,14 +58,6 @@ public class Myself {
         }
     }
 
-    public Key getPrivateKey(){
-        try{
-            return kp.getPrivate();
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     public byte[] getPublicKey(){
         try {
@@ -75,53 +67,11 @@ public class Myself {
         }
     }
 
-    public String getPrivateKeyString(){
-        return Base64.getEncoder().encodeToString(pvt.getEncoded());
-
-    }
 
     public String getPublicKeyString(){
         return Base64.getEncoder().encodeToString(pub.getEncoded());
     }
-
-
-    public String encrypt(byte[] planiEncode) throws Exception {
-        Cipher encryptCipher = Cipher.getInstance("RSA");
-        encryptCipher.init(Cipher.ENCRYPT_MODE, kp.getPublic());
-
-        byte[] cipherText = encryptCipher.doFinal(planiEncode);
-
-        return Base64.getEncoder().encodeToString(cipherText);
-    }
-
-    public String decrypt(String cipherText) throws Exception {
-        byte[] bytes = Base64.getDecoder().decode(cipherText);
-
-        Cipher decriptCipher = Cipher.getInstance("RSA");
-        decriptCipher.init(Cipher.DECRYPT_MODE, kp.getPrivate());
-
-        return new String(decriptCipher.doFinal(bytes), UTF_8);
-    }
-
-    public byte[] EncryptSecretKey (SecretKey skey)
-    {
-        Cipher cipher = null;
-        byte[] key = null;
-
-        try
-        {
-            // initialize the cipher with the user's public key
-            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, pub );
-            key = cipher.doFinal(skey.getEncoded());
-        }
-        catch(Exception e )
-        {
-            System.out.println ( "exception encoding key: " + e.getMessage() );
-            e.printStackTrace();
-        }
-        return key;
-    }
+    
 
     public SecretKey decryptAESKey(byte[] data )
     {

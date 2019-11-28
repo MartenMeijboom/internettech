@@ -66,7 +66,7 @@ public class SomeoneElse {
     {
         try
         {
-            System.out.println("E: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+            System.out.println(name + "E: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, sessionKey);
             return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
@@ -74,6 +74,7 @@ public class SomeoneElse {
         catch (Exception e)
         {
             System.out.println("Error while encrypting: " + e.toString());
+            e.printStackTrace();
         }
         return null;
     }
@@ -82,7 +83,7 @@ public class SomeoneElse {
     {
         try
         {
-            System.out.println("D: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+            System.out.println(name + "D: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, sessionKey);
             return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
@@ -90,6 +91,7 @@ public class SomeoneElse {
         catch (Exception e)
         {
             System.out.println("Error while decrypting: " + e.toString());
+            e.printStackTrace();
         }
         return null;
     }
