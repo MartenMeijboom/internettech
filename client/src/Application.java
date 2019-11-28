@@ -11,9 +11,7 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.Security;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Objects;
+import java.util.*;
 
 public class Application {
 
@@ -55,30 +53,6 @@ public class Application {
             readUserInputCompatMode();
         }else {
             readUserInput();
-        }
-
-        try {
-            /*
-            SomeoneElse someoneElse = new SomeoneElse("Joris");
-            someoneElse.generateSessionKey();
-
-            System.out.println(someoneElse.getSessionKeyString());
-
-            //encoding
-            byte[] encryptedKey = myself.EncryptSecretKey(someoneElse.getSessionKey());
-            String encryptedKeyString = Base64.getEncoder().encodeToString(encryptedKey);
-
-            //decoding
-            byte[] decodedEncryptedKey = Base64.getDecoder().decode(encryptedKeyString);
-            SecretKey originalKey = myself.decryptAESKey(decodedEncryptedKey);
-
-            someoneElse.setSessionKey(originalKey);
-
-            System.out.println(someoneElse.getSessionKeyString());
-             */
-
-        }catch (Exception e){
-            e.printStackTrace();
         }
     }
 
@@ -273,12 +247,11 @@ public class Application {
         }
     }
 
-
+    private HashMap<String, String> dms;
     private void sendDM(String receiver, String message){
+        dms = null;
         try {
             SomeoneElse otherClient = getPersonByName(receiver);
-
-            Base64.Encoder encoder = Base64.getEncoder();
 
             if (otherClient != null) {
                 if (otherClient.getSessionKey() != null) {
@@ -310,6 +283,8 @@ public class Application {
                     PrintWriter writer = new PrintWriter(out);
                     writer.println("PUBLICKEY " + " { name: '" + receiver + "', message: '" + myself.getPublicKeyString() + "' }");
                     writer.flush();
+                    dms = new HashMap<>();
+                    dms.put(receiver, message);
                 }
             }else{
                 otherClient = new SomeoneElse(receiver);
@@ -318,6 +293,9 @@ public class Application {
                 PrintWriter writer = new PrintWriter(out);
                 writer.println("PUBLICKEY " + "{name: '" + receiver + "', message: '" + myself.getPublicKeyString() + "'}");
                 writer.flush();
+
+                dms = new HashMap<>();
+                dms.put(receiver, message);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -331,7 +309,7 @@ public class Application {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
                 while ((fromServer = reader.readLine()) != null) {
-                    System.out.println("Server: " + fromServer);
+                    //System.out.println("Server: " + fromServer);
 
                     Message message = new Message(fromServer);
                     JSONArray jsonArray;
@@ -343,11 +321,9 @@ public class Application {
                             break;
 
                         case DM:
-
                             jsonObject = new JSONObject(message.getPayload());
                             String decodedMessage = getPersonByName(jsonObject.getString("username")).decrypt(jsonObject.getString("message"));
                             System.out.println("DM [" + jsonObject.getString("username") + "] " + decodedMessage);
-
 
                             break;
 
@@ -398,7 +374,7 @@ public class Application {
                             handleSessionKey(message);
                             break;
                         case UNKOWN:
-                            System.out.println("YEET");
+                            //System.out.println("YEET");
                             break;
                     }
 
@@ -412,8 +388,6 @@ public class Application {
 
     private void handlePublicKey(Message message){
         try {
-            Base64.Encoder encoder = Base64.getEncoder();
-
             JSONObject jsonObject = new JSONObject(message.getPayload());
             String username = jsonObject.getString("name");
             String key = jsonObject.getString("message");
@@ -466,6 +440,11 @@ public class Application {
 
             System.out.println("Private connection with " + username + " has been initialised");
 
+            if(dms != null){
+                for (Map.Entry<String, String> entry:dms.entrySet()) {
+                    sendDM(entry.getKey(), entry.getValue());
+                }
+            }
         }catch (Exception e){
             e.printStackTrace();
         }

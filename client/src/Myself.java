@@ -71,7 +71,7 @@ public class Myself {
     public String getPublicKeyString(){
         return Base64.getEncoder().encodeToString(pub.getEncoded());
     }
-    
+
 
     public SecretKey decryptAESKey(byte[] data )
     {

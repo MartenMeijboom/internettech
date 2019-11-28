@@ -1,12 +1,10 @@
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class SomeoneElse {
 
@@ -66,7 +64,7 @@ public class SomeoneElse {
     {
         try
         {
-            System.out.println(name + "E: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+            //System.out.println(name + "E: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, sessionKey);
             return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
@@ -83,7 +81,7 @@ public class SomeoneElse {
     {
         try
         {
-            System.out.println(name + "D: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+            //System.out.println(name + "D: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, sessionKey);
             return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
