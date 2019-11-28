@@ -6,6 +6,8 @@ import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class SomeoneElse {
 
     private String name;
@@ -17,6 +19,7 @@ public class SomeoneElse {
         this.name = name;
         pub = null;
         sessionKey = null;
+        Security.setProperty("crypto.policy", "unlimited");
     }
 
     public String getName(){
@@ -58,29 +61,37 @@ public class SomeoneElse {
         this.sessionKey = key;
     }
 
-    public byte[] encryptWithPub(byte[] plaintext) throws Exception
+
+    public String encrypt(String strToEncrypt)
     {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, pub);
-        return cipher.doFinal(plaintext);
+        try
+        {
+            System.out.println("E: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, sessionKey);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error while encrypting: " + e.toString());
+        }
+        return null;
     }
 
-    public byte[] encryptWithSession(byte[] plaintext) throws Exception
+    public String decrypt(String strToDecrypt)
     {
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, sessionKey);
-        return cipher.doFinal(plaintext);
-    }
-
-    public byte[] decrypt(byte[] ciphertext) throws Exception
-    {
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, sessionKey);
-        return cipher.doFinal(ciphertext);
-    }
-
-    public String getSessionKeyString(){
-        return Base64.getEncoder().encodeToString(getSessionKey().getEncoded());
+        try
+        {
+            System.out.println("D: " + Base64.getEncoder().encodeToString(sessionKey.getEncoded()));
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, sessionKey);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error while decrypting: " + e.toString());
+        }
+        return null;
     }
 
     public byte[] EncryptSecretKey (SecretKey skey)

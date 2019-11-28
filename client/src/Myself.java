@@ -20,6 +20,7 @@ public class Myself {
     private KeyPair kp;
 
     public Myself(){
+        Security.setProperty("crypto.policy", "unlimited");
         pathString = "./keys/";
     }
 
@@ -125,7 +126,6 @@ public class Myself {
     public SecretKey decryptAESKey(byte[] data )
     {
         SecretKey key = null;
-        PrivateKey privKey = null;
         Cipher cipher = null;
 
         try

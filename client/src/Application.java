@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.Security;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -30,6 +31,7 @@ public class Application {
     private ArrayList<SomeoneElse> otherClients;
 
     public static void main(String[] args) {
+        Security.setProperty("crypto.policy", "unlimited");
         if(args != null && args.length > 0){
             if(args[0].equals("--compat-mode")){
                 compatMode = true;
@@ -280,7 +282,7 @@ public class Application {
 
             if (otherClient != null) {
                 if (otherClient.getSessionKey() != null) {
-                    String encryptedMessage = myself.encrypt(message.getBytes());
+                    String encryptedMessage = otherClient.encrypt(message);
 
                     PrintWriter writer = new PrintWriter(out);
                     writer.println("DM " + "{name: '" + receiver + "', message: '" + encryptedMessage + "'}");
@@ -298,11 +300,10 @@ public class Application {
 
                     System.out.println("Private connection with " + receiver + " created!");
 
-                    byte[]encryptedMessage = otherClient.encryptWithSession(message.getBytes(StandardCharsets.UTF_8));
-                    String encodedString = encoder.encodeToString(encryptedMessage);
+                    String encryptedMessage = otherClient.encrypt(message);
 
                     writer = new PrintWriter(out);
-                    writer.println("DM " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
+                    writer.println("DM " + "{name: '" + receiver + "', message: '" + encryptedMessage + "'}");
 
                     writer.flush();
                 }else{
@@ -342,11 +343,12 @@ public class Application {
                             break;
 
                         case DM:
+
                             jsonObject = new JSONObject(message.getPayload());
-                            byte[] decodedMessage = Base64.getDecoder().decode(jsonObject.getString("message"));
-                            decodedMessage = Objects.requireNonNull(getPersonByName(jsonObject.getString("username"))).decrypt(decodedMessage);
-                            String messageString = new String(decodedMessage);
-                            System.out.println("DM [" + jsonObject.getString("username") + "] " + messageString);
+                            String decodedMessage = getPersonByName(jsonObject.getString("username")).decrypt(jsonObject.getString("message"));
+                            System.out.println("DM [" + jsonObject.getString("username") + "] " + decodedMessage);
+
+
                             break;
 
                         case BCST:
@@ -430,7 +432,7 @@ public class Application {
             }
 
             //encoding
-            byte[] encryptedKey = myself.EncryptSecretKey(user.getSessionKey());
+            byte[] encryptedKey = user.EncryptSecretKey(user.getSessionKey());
             String encryptedKeyString = Base64.getEncoder().encodeToString(encryptedKey);
 
             PrintWriter writer = new PrintWriter(out);
