@@ -56,7 +56,7 @@ public class Application {
         }
 
         try {
-
+            /*
             SomeoneElse someoneElse = new SomeoneElse("Joris");
             someoneElse.generateSessionKey();
 
@@ -73,6 +73,7 @@ public class Application {
             someoneElse.setSessionKey(originalKey);
 
             System.out.println(someoneElse.getSessionKeyString());
+             */
 
         }catch (Exception e){
             e.printStackTrace();
@@ -287,17 +288,18 @@ public class Application {
                 }else if(otherClient.getPublicKey() != null){
                     otherClient.generateSessionKey();
 
-                    byte[] encryptedMessage = otherClient.encryptWithPub(otherClient.getSessionKeyString().getBytes(StandardCharsets.UTF_8));
-                    String encodedString = encoder.encodeToString(encryptedMessage);
+                    //encoding
+                    byte[] encryptedKey = otherClient.EncryptSecretKey(otherClient.getSessionKey());
+                    String encryptedKeyString = Base64.getEncoder().encodeToString(encryptedKey);
 
                     PrintWriter writer = new PrintWriter(out);
-                    writer.println("SESSIONKEY " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
+                    writer.println("SESSIONKEY " + "{name: '" + receiver + "', message: '" + encryptedKeyString + "'}");
                     writer.flush();
 
                     System.out.println("Private connection with " + receiver + " created!");
 
-                    encryptedMessage = otherClient.encryptWithSession(message.getBytes(StandardCharsets.UTF_8));
-                    encodedString = encoder.encodeToString(encryptedMessage);
+                    byte[]encryptedMessage = otherClient.encryptWithSession(message.getBytes(StandardCharsets.UTF_8));
+                    String encodedString = encoder.encodeToString(encryptedMessage);
 
                     writer = new PrintWriter(out);
                     writer.println("DM " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
@@ -427,11 +429,12 @@ public class Application {
                 user.generateSessionKey();
             }
 
-            byte[] encryptedMessage = user.encryptWithPub(user.getSessionKeyString().getBytes(StandardCharsets.UTF_8));
-            String encodedString = encoder.encodeToString(encryptedMessage);
+            //encoding
+            byte[] encryptedKey = myself.EncryptSecretKey(user.getSessionKey());
+            String encryptedKeyString = Base64.getEncoder().encodeToString(encryptedKey);
 
             PrintWriter writer = new PrintWriter(out);
-            writer.println("SESSIONKEY " + "{name: '" + user.getName() + "', message: '" + encodedString + "'}");
+            writer.println("SESSIONKEY " + "{name: '" + user.getName() + "', message: '" + encryptedKeyString + "'}");
             writer.flush();
 
             System.out.println("Private connection with " + username + " has been initialised");
@@ -454,11 +457,10 @@ public class Application {
                 otherClients.add(user);
             }
 
-            String decryptedKey = myself.decrypt(key);
+            byte[] decodedEncryptedKey = Base64.getDecoder().decode(key);
+            SecretKey originalKey = myself.decryptAESKey(decodedEncryptedKey);
 
-            //SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
-
-            //user.setSessionKey(decryptedKey);
+            user.setSessionKey(originalKey);
 
             System.out.println("Private connection with " + username + " has been initialised");
 

@@ -37,8 +37,13 @@ public class SomeoneElse {
         return sessionKey;
     }
 
-    public Key getPublicKey(){
-        return pub;
+    public byte[] getPublicKey(){
+        try{
+            return pub.getEncoded();
+        }catch (NullPointerException e){
+            return null;
+        }
+
     }
 
     public void setPublicKey(byte[] bytes){
@@ -78,10 +83,23 @@ public class SomeoneElse {
         return Base64.getEncoder().encodeToString(getSessionKey().getEncoded());
     }
 
-    public String getPublicKeyString(){
-        Key key = getPublicKey();
-        Base64.Encoder encoder = Base64.getEncoder();
+    public byte[] EncryptSecretKey (SecretKey skey)
+    {
+        Cipher cipher = null;
+        byte[] key = null;
 
-        return encoder.encodeToString(key.getEncoded());
+        try
+        {
+            // initialize the cipher with the user's public key
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, pub );
+            key = cipher.doFinal(skey.getEncoded());
+        }
+        catch(Exception e )
+        {
+            System.out.println ( "exception encoding key: " + e.getMessage() );
+            e.printStackTrace();
+        }
+        return key;
     }
 }

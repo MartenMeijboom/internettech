@@ -66,10 +66,10 @@ public class Myself {
         }
     }
 
-    public Key getPublicKey(){
-        try{
-            return kp.getPublic();
-        }catch (Exception e){
+    public byte[] getPublicKey(){
+        try {
+            return pub.getEncoded();
+        }catch (NullPointerException e){
             return null;
         }
     }
