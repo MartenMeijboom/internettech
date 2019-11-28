@@ -8,11 +8,14 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Myself {
 
     private String name;
     private String pathString;
     private Key pub, pvt;
+    private KeyPair kp;
 
     public Myself(){
         pathString = "./keys/";
@@ -30,8 +33,8 @@ public class Myself {
         try{
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
 
-            kpg.initialize(2048);
-            KeyPair kp = kpg.generateKeyPair();
+            kpg.initialize(1024);
+            kp = kpg.generateKeyPair();
 
             pub = kp.getPublic();
             pvt = kp.getPrivate();
@@ -52,63 +55,49 @@ public class Myself {
         }
     }
 
-    public PrivateKey getPrivateKey(){
+    public Key getPrivateKey(){
         try{
-            Path path = Paths.get(pathString + "my.key");
-            byte[] bytes = Files.readAllBytes(path);
-
-            PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(bytes);
-
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-
-            return kf.generatePrivate(ks);
-
+            return kp.getPrivate();
         }catch (Exception e){
             e.printStackTrace();
             return null;
         }
     }
 
-    public PublicKey getPublicKey(){
+    public Key getPublicKey(){
         try{
-            Path path = Paths.get(pathString + "my.pub");
-            byte[] bytes = Files.readAllBytes(path);
-
-            X509EncodedKeySpec ks = new X509EncodedKeySpec(bytes);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return kf.generatePublic(ks);
+            return kp.getPublic();
         }catch (Exception e){
-            e.printStackTrace();
             return null;
         }
     }
 
     public String getPrivateKeyString(){
-        PrivateKey key = getPrivateKey();
-        Base64.Encoder encoder = Base64.getEncoder();
+        return Base64.getEncoder().encodeToString(pvt.getEncoded());
 
-        return encoder.encodeToString(key.getEncoded());
     }
 
     public String getPublicKeyString(){
-        PublicKey key = getPublicKey();
-        Base64.Encoder encoder = Base64.getEncoder();
-
-        return encoder.encodeToString(key.getEncoded());
+        return Base64.getEncoder().encodeToString(pub.getEncoded());
     }
 
-    public byte[] encrypt(byte[] plaintext) throws Exception
-    {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
-        return cipher.doFinal(plaintext);
+
+    public String encrypt(byte[] planiEncode) throws Exception {
+        Cipher encryptCipher = Cipher.getInstance("RSA");
+        encryptCipher.init(Cipher.ENCRYPT_MODE, kp.getPublic());
+
+        byte[] cipherText = encryptCipher.doFinal(planiEncode);
+
+        return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    public byte[] decrypt(byte[] ciphertext) throws Exception
-    {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding");
-        cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
-        return cipher.doFinal(ciphertext);
+    public String decrypt(String cipherText) throws Exception {
+        byte[] bytes = Base64.getDecoder().decode(cipherText);
+
+        Cipher decriptCipher = Cipher.getInstance("RSA");
+        decriptCipher.init(Cipher.DECRYPT_MODE, kp.getPrivate());
+
+        return new String(decriptCipher.doFinal(bytes), UTF_8);
     }
 
 }

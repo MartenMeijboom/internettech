@@ -54,6 +54,25 @@ public class Application {
         }else {
             readUserInput();
         }
+
+        try {
+
+            SomeoneElse someoneElse = new SomeoneElse("Joris");
+            someoneElse.generateSessionKey();
+
+            System.out.println(someoneElse.getSessionKeyString());
+
+            String encryptedSessionKey = myself.encrypt(someoneElse.getSessionKey().getEncoded());
+
+            String decryptedSessionKey = myself.decrypt(encryptedSessionKey);
+
+            someoneElse.setSessionKey(decryptedSessionKey.getBytes());
+
+            System.out.println(someoneElse.getSessionKeyString());
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void connect(String ip, int port){
@@ -247,6 +266,7 @@ public class Application {
         }
     }
 
+
     private void sendDM(String receiver, String message){
         try {
             SomeoneElse otherClient = getPersonByName(receiver);
@@ -255,12 +275,10 @@ public class Application {
 
             if (otherClient != null) {
                 if (otherClient.getSessionKey() != null) {
-                    byte[] messageArray = message.getBytes(StandardCharsets.UTF_8);
-                    byte[] encryptedMessage = myself.encrypt(messageArray);
-                    String encodedString = encoder.encodeToString(encryptedMessage);
+                    String encryptedMessage = myself.encrypt(message.getBytes());
 
                     PrintWriter writer = new PrintWriter(out);
-                    writer.println("DM " + "{name: '" + receiver + "', message: '" + encodedString + "'}");
+                    writer.println("DM " + "{name: '" + receiver + "', message: '" + encryptedMessage + "'}");
                     writer.flush();
                 }else if(otherClient.getPublicKey() != null){
                     otherClient.generateSessionKey();
@@ -399,10 +417,7 @@ public class Application {
                 otherClients.add(user);
             }
 
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            X509EncodedKeySpec ks = new X509EncodedKeySpec(Base64.getDecoder().decode(key));
-            Key publicKey = kf.generatePublic(ks);
-            user.setPublicKey(publicKey);
+            user.setPublicKey(Base64.getDecoder().decode(key));
 
             if(user.getSessionKey() == null){
                 user.generateSessionKey();
@@ -435,12 +450,11 @@ public class Application {
                 otherClients.add(user);
             }
 
-            byte[] decodedKey = Base64.getDecoder().decode(key);
-            byte[] decryptedKey = myself.decrypt(decodedKey);
+            String decryptedKey = myself.decrypt(key);
 
-            SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "DES");
+            //SecretKey originalKey = new SecretKeySpec(decryptedKey, 0, decryptedKey.length, "AES");
 
-            user.setSessionKey(originalKey);
+            //user.setSessionKey(decryptedKey);
 
             System.out.println("Private connection with " + username + " has been initialised");
 

@@ -1,15 +1,16 @@
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import java.security.Key;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.*;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class SomeoneElse {
 
     private String name;
     private String pathString;
-    private Key pub, sessionKey;
+    private Key sessionKey;
+    private PublicKey pub;
 
     public SomeoneElse(String name){
         this.name = name;
@@ -24,6 +25,7 @@ public class SomeoneElse {
     public void generateSessionKey(){
         try{
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(256);
             sessionKey = keyGen.generateKey();
         }catch (Exception e){
             e.printStackTrace();
@@ -38,12 +40,16 @@ public class SomeoneElse {
         return pub;
     }
 
-    public void setPublicKey(Key pub){
-        this.pub = pub;
+    public void setPublicKey(byte[] bytes){
+        try {
+            pub = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void setSessionKey(Key key){
-        this.sessionKey = key;
+    public void setSessionKey(byte[] encodedKey){
+        sessionKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
     }
 
     public byte[] encryptWithPub(byte[] plaintext) throws Exception
@@ -68,10 +74,7 @@ public class SomeoneElse {
     }
 
     public String getSessionKeyString(){
-        Key key = getSessionKey();
-        Base64.Encoder encoder = Base64.getEncoder();
-
-        return encoder.encodeToString(key.getEncoded());
+        return Base64.getEncoder().encodeToString(getSessionKey().getEncoded());
     }
 
     public String getPublicKeyString(){
