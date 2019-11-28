@@ -1,5 +1,6 @@
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
@@ -9,7 +10,7 @@ public class SomeoneElse {
 
     private String name;
     private String pathString;
-    private Key sessionKey;
+    private SecretKey sessionKey;
     private PublicKey pub;
 
     public SomeoneElse(String name){
@@ -32,7 +33,7 @@ public class SomeoneElse {
         }
     }
 
-    public Key getSessionKey(){
+    public SecretKey getSessionKey(){
         return sessionKey;
     }
 
@@ -48,8 +49,8 @@ public class SomeoneElse {
         }
     }
 
-    public void setSessionKey(byte[] encodedKey){
-        sessionKey = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
+    public void setSessionKey(SecretKey key){
+        this.sessionKey = key;
     }
 
     public byte[] encryptWithPub(byte[] plaintext) throws Exception

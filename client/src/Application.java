@@ -62,11 +62,15 @@ public class Application {
 
             System.out.println(someoneElse.getSessionKeyString());
 
-            String encryptedSessionKey = myself.encrypt(someoneElse.getSessionKey().getEncoded());
+            //encoding
+            byte[] encryptedKey = myself.EncryptSecretKey(someoneElse.getSessionKey());
+            String encryptedKeyString = Base64.getEncoder().encodeToString(encryptedKey);
 
-            String decryptedSessionKey = myself.decrypt(encryptedSessionKey);
+            //decoding
+            byte[] decodedEncryptedKey = Base64.getDecoder().decode(encryptedKeyString);
+            SecretKey originalKey = myself.decryptAESKey(decodedEncryptedKey);
 
-            someoneElse.setSessionKey(decryptedSessionKey.getBytes());
+            someoneElse.setSessionKey(originalKey);
 
             System.out.println(someoneElse.getSessionKeyString());
 

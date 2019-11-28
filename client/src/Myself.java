@@ -1,4 +1,6 @@
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -100,4 +102,48 @@ public class Myself {
         return new String(decriptCipher.doFinal(bytes), UTF_8);
     }
 
+    public byte[] EncryptSecretKey (SecretKey skey)
+    {
+        Cipher cipher = null;
+        byte[] key = null;
+
+        try
+        {
+            // initialize the cipher with the user's public key
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, pub );
+            key = cipher.doFinal(skey.getEncoded());
+        }
+        catch(Exception e )
+        {
+            System.out.println ( "exception encoding key: " + e.getMessage() );
+            e.printStackTrace();
+        }
+        return key;
+    }
+
+    public SecretKey decryptAESKey(byte[] data )
+    {
+        SecretKey key = null;
+        PrivateKey privKey = null;
+        Cipher cipher = null;
+
+        try
+        {
+            // initialize the cipher...
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, pvt );
+
+            // generate the aes key!
+            key = new SecretKeySpec( cipher.doFinal(data), "AES" );
+        }
+        catch(Exception e)
+        {
+            System.out.println ( "exception decrypting the aes key: "
+                    + e.getMessage() );
+            return null;
+        }
+
+        return key;
+    }
 }
