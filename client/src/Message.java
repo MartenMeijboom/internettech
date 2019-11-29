@@ -12,6 +12,7 @@ public class Message {
         PING,
         SESSIONKEY,
         PUBLICKEY,
+        FILE,
         UNKOWN;
     }
 
@@ -33,6 +34,8 @@ public class Message {
                 return MessageType.PUBLICKEY;
             }else if(this.line.contains("SESSIONKEY")){
                 return MessageType.SESSIONKEY;
+            }else if(this.line.contains("FILE")){
+                return MessageType.FILE;
             }
 
             if (this.line != null && this.line.length() > 0 && !line.contains("+OK") && !line.contains("-ERR")) {

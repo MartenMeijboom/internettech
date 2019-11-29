@@ -1,16 +1,11 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.security.KeyFactory;
 import java.security.Security;
-import java.security.spec.X509EncodedKeySpec;
+import javax.swing.*;
 import java.util.*;
 
 public class Application {
@@ -139,6 +134,8 @@ public class Application {
                             System.out.println("7) Send message to group");
                             System.out.println("8) Leave a group");
                             System.out.println("9) Kick someone from my group");
+                            System.out.println(" - Users");
+                            System.out.println("10) Send a file");
                             System.out.println("");
                             first = false;
                         }
@@ -214,6 +211,16 @@ public class Application {
                                 writer.println("KICK " + "{name: '" + groupname + "', user: '" + name + "'}");
                                 writer.flush();
                                 break;
+                            case 10:
+                                System.out.println("To who would you like to send the file?");
+                                userInput = input.readLine();
+                                receiver = userInput;
+
+                                System.out.println("Please select the file");
+                                File inputFile = new ChooseFile().getFile();
+
+                                sendFile(receiver, inputFile);
+                                break;
                         }
                     }
                 }
@@ -226,6 +233,7 @@ public class Application {
             closeConnection();
         }).start();
     }
+
 
     private void closeConnection(){
         // close the connection
@@ -246,6 +254,45 @@ public class Application {
             System.out.println(i);
         }
     }
+
+    private void sendFile(String receiver, File file){
+        System.out.println(file.getName() + " chosen");
+        System.out.println("Sending file to " + receiver +  "...");
+
+        new Thread(() -> {
+            FileInputStream fileInputStream = null;
+            BufferedInputStream bufferedInputStream = null;
+            try {
+                PrintWriter writer = new PrintWriter(out);
+                byte[] fileByteArray = new byte[(int)file.length()];
+
+                fileInputStream = new FileInputStream(file);
+                bufferedInputStream = new BufferedInputStream(fileInputStream);
+                bufferedInputStream.read(fileByteArray, 0, fileByteArray.length);
+
+                String fileString = Base64.getEncoder().encodeToString(fileByteArray);
+
+                writer.println("FILE {name: '" + receiver + "', file: '" + fileString + "', filename: '" + file.getName() + "'}");
+                writer.flush();
+
+                System.out.println("Finished sending file!");
+            }catch (Exception e){
+                System.out.println("Something went wrong while sending the file");
+            }finally {
+                try {
+                    if (fileInputStream != null) {
+                        fileInputStream.close();
+                    }
+                    if (bufferedInputStream != null) {
+                        bufferedInputStream.close();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
 
     private HashMap<String, String> dms;
     private void sendDM(String receiver, String message){
@@ -373,6 +420,9 @@ public class Application {
                         case SESSIONKEY:
                             handleSessionKey(message);
                             break;
+                        case FILE:
+                            receiveFile(message);
+                            break;
                         case UNKOWN:
                             //System.out.println("YEET");
                             break;
@@ -382,6 +432,46 @@ public class Application {
             }
             catch (Exception e){
                 e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void receiveFile(Message message){
+        new Thread(() -> {
+
+            FileOutputStream fileOutputStream = null;
+            BufferedOutputStream bufferedOutputStream = null;
+
+            try {
+                JSONObject jsonObject = new JSONObject(message.getPayload());
+                String sender = jsonObject.getString("name");
+                String file = jsonObject.getString("file");
+                String fileName = jsonObject.getString("filename");
+
+                System.out.println("Receiving file from " + sender + "...");
+
+                byte[] fileByteArray = Base64.getDecoder().decode(file);
+                fileOutputStream = new FileOutputStream("downloads/" + fileName);
+                bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+
+                bufferedOutputStream.write(fileByteArray, 0, fileByteArray.length);
+                bufferedOutputStream.flush();
+
+                System.out.println("File received!");
+
+            }catch (Exception e){
+                System.out.println("Something went wrong while receiving the file");
+            }finally {
+                try {
+                    if (fileOutputStream != null) {
+                        fileOutputStream.close();
+                    }
+                    if (bufferedOutputStream != null) {
+                        bufferedOutputStream.close();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         }).start();
     }

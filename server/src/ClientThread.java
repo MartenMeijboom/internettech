@@ -133,6 +133,17 @@ public class ClientThread implements Runnable {
                         case SESSIONKEY:
                             handleSessionKey(message);
                             break;
+                        case FILE:
+                            JSONObject jsonObject = new JSONObject(message.getPayload());
+                            String receiver = jsonObject.getString("name");
+                            String file = jsonObject.getString("file");
+                            String fileName = jsonObject.getString("filename");
+
+                            ClientThread receiverThread = server.getClientByName(receiver);
+                            if(receiverThread != null){
+                                receiverThread.writeToClient("FILE {name: '" + this.getUsername() + "', file: '" + file + "', filename: '" + fileName + "'}");
+                            }
+                            break;
                         case UNKOWN:
                             writeToClient("-ERR Unkown command");
                             break;

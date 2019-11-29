@@ -16,6 +16,7 @@ public class Message {
         KICK,
         SESSIONKEY,
         PUBLICKEY,
+        FILE,
         UNKOWN;
     }
 
