@@ -15,9 +15,6 @@ public class ChooseFile {
         if(JFileChooser.APPROVE_OPTION == fc.showOpenDialog(null)){
             frame.setVisible(false);
             return fc.getSelectedFile();
-        }else {
-            System.out.println("Next time select a file.");
-            System.exit(1);
         }
         return null;
     }
@@ -25,7 +22,6 @@ public class ChooseFile {
     private void BringToFront() {
         frame.setExtendedState(JFrame.ICONIFIED);
         frame.setExtendedState(JFrame.NORMAL);
-
     }
 
 }

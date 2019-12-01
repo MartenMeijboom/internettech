@@ -224,6 +224,9 @@ public class Application {
                         }
                     }
                 }
+                catch (NullPointerException e){
+                    System.out.println("No file chosen");
+                }
                 catch(Exception e)
                 {
                     System.out.println(e);
@@ -264,7 +267,9 @@ public class Application {
             BufferedInputStream bufferedInputStream = null;
             try {
                 PrintWriter writer = new PrintWriter(out);
-                byte[] fileByteArray = new byte[(int)file.length()];
+
+                int fileSize = (int)file.length();
+                byte[] fileByteArray = new byte[fileSize];
 
                 fileInputStream = new FileInputStream(file);
                 bufferedInputStream = new BufferedInputStream(fileInputStream);
@@ -276,8 +281,12 @@ public class Application {
                 writer.flush();
 
                 System.out.println("Finished sending file!");
-            }catch (Exception e){
+            }catch (NegativeArraySizeException e){
+                System.out.println("File is too big. Maximum file size is " + 256 + " mb");
+            }
+            catch (Exception e){
                 System.out.println("Something went wrong while sending the file");
+                e.printStackTrace();
             }finally {
                 try {
                     if (fileInputStream != null) {
