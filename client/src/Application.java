@@ -134,7 +134,7 @@ public class Application {
                             System.out.println("7) Send message to group");
                             System.out.println("8) Leave a group");
                             System.out.println("9) Kick someone from my group");
-                            System.out.println(" - Users");
+                            System.out.println(" - Files");
                             System.out.println("10) Send a file");
                             System.out.println("");
                             first = false;

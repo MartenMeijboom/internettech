@@ -1,13 +1,5 @@
-public class ServerConfiguration {
-    public final String WELCOME_MESSAGE = "Welkom to WhatsUpp!";
-    public final String VERSION = "1.3";
+public class Conf {
     public final int DEFAULT_SERVER_PORT = 1337;
-
-
-    public final String RESET_CLI_COLORS = "\033[0m";
-    public final String CLI_COLOR_INCOMING = "\033[31m";
-    public final String CLI_COLOR_OUTGOING = "\033[32m";
-
 
     private int serverPort;
 
@@ -18,7 +10,7 @@ public class ServerConfiguration {
     private boolean sendPong = true;
 
 
-    public ServerConfiguration() {
+    public Conf() {
         this.serverPort = 1337;
     }
 

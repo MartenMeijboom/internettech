@@ -1,25 +1,23 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 public class Server {
-    private final int PING_TIMEOUT = 3000;
     private ServerSocket serverSocket;
-    Set<ClientThread> threads;
-    Set<Group> groups;
-    ServerConfiguration conf;
+    ArrayList<ClientThread> threads;
+    ArrayList<Group> groups;
+    Conf conf;
 
-    public Server(ServerConfiguration conf) {
+    public Server(Conf conf) {
         this.conf = conf;
     }
 
     public void run() {
         try {
             this.serverSocket = new ServerSocket(this.conf.getServerPort());
-            this.threads = new HashSet<>();
-            this.groups = new HashSet<>();
+            this.threads = new ArrayList<>();
+            this.groups = new ArrayList<>();
 
             while (true) {
                 Socket socket = this.serverSocket.accept();

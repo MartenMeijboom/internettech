@@ -10,10 +10,17 @@ public class ClientThread implements Runnable {
 
     private Socket socket;
     private Server server;
-
-    private ServerState state;
     private String username;
     boolean pongReceived = false;
+
+    private enum ServerState{
+        INIT,
+        CONNECTING,
+        FINISHED,
+        CONNECTED
+    }
+    private ServerState state;
+
 
     public ClientThread(Socket socket, Server server) {
         this.state = ServerState.INIT;
@@ -37,7 +44,7 @@ public class ClientThread implements Runnable {
             this.state = ServerState.CONNECTING;
             //server.conf.getClass();
             String welcomeMessage = "HELO " + "Welkom to WhatsUpp!";
-            writeToClient(welcomeMessage);
+            sendToClient(welcomeMessage);
 
             while (!this.state.equals(ServerState.FINISHED)) {
 
@@ -57,7 +64,7 @@ public class ClientThread implements Runnable {
                             isValidUsername = message.getPayload().matches("[a-zA-Z0-9_]{3,14}");
                             if (!isValidUsername) {
                                 this.state = ServerState.FINISHED;
-                                writeToClient("-ERR username has an invalid format (only characters, numbers and underscores are allowed)");
+                                sendToClient("-ERR username has an invalid format (only characters, numbers and underscores are allowed)");
                                 continue;
                             }
                             userExists = false;
@@ -68,29 +75,29 @@ public class ClientThread implements Runnable {
                                 }
                             }
                             if (userExists) {
-                                writeToClient("-ERR user already logged in");
+                                sendToClient("-ERR user already logged in");
                                 continue;
                             }
                             this.state = ServerState.CONNECTED;
                             this.username = message.getPayload();
-                            writeToClient("+OK " + message.getLine());
+                            sendToClient("+OK " + message.getLine());
                             break;
 
                         case BCST:
                             for (ClientThread ct : server.threads) {
                                 if (ct != this) {
-                                    ct.writeToClient("BCST [" + getUsername() + "] " + message.getPayload());
+                                    ct.sendToClient("BCST [" + getUsername() + "] " + message.getPayload());
                                 }
                             }
-                            writeToClient("+OK " + message.getLine());
+                            sendToClient("+OK " + message.getLine());
                             break;
 
                         case LS:
-                            writeToClient("LS " + server.getUsers());
+                            sendToClient("LS " + server.getUsers());
                             break;
 
                         case LG:
-                            writeToClient("LG " + server.getGroups());
+                            sendToClient("LG " + server.getGroups());
                             break;
 
                         case JG:
@@ -116,7 +123,7 @@ public class ClientThread implements Runnable {
 
                         case QUIT:
                             this.state = ServerState.FINISHED;
-                            writeToClient("+OK Goodbye");
+                            sendToClient("+OK Goodbye");
                             break;
 
                         case BCSTG:
@@ -141,11 +148,11 @@ public class ClientThread implements Runnable {
 
                             ClientThread receiverThread = server.getClientByName(receiver);
                             if(receiverThread != null){
-                                receiverThread.writeToClient("FILE {name: '" + this.getUsername() + "', file: '" + file + "', filename: '" + fileName + "'}");
+                                receiverThread.sendToClient("FILE {name: '" + this.getUsername() + "', file: '" + file + "', filename: '" + fileName + "'}");
                             }
                             break;
                         case UNKOWN:
-                            writeToClient("-ERR Unkown command");
+                            sendToClient("-ERR Unkown command");
                             break;
                     }
                 }
@@ -176,9 +183,9 @@ public class ClientThread implements Runnable {
         ClientThread user = server.getClientByName(username);
 
         if(user != null){
-            user.writeToClient("PUBLICKEY {name: '" + this.username + "', message: '" + key + "'}" );
+            user.sendToClient("PUBLICKEY {name: '" + this.username + "', message: '" + key + "'}" );
         }else{
-            writeToClient("-ERR user not found");
+            sendToClient("-ERR user not found");
         }
     }
 
@@ -190,9 +197,9 @@ public class ClientThread implements Runnable {
         ClientThread user = server.getClientByName(username);
 
         if(user != null){
-            user.writeToClient("SESSIONKEY {name: '" + this.username + "', message: '" + key + "'}" );
+            user.sendToClient("SESSIONKEY {name: '" + this.username + "', message: '" + key + "'}" );
         }else{
-            writeToClient("-ERR user not found");
+            sendToClient("-ERR user not found");
         }
     }
 
@@ -202,9 +209,9 @@ public class ClientThread implements Runnable {
 
             if(group != null){
                 group.addMember(this);
-                this.writeToClient("+OKDJG " + message);
+                this.sendToClient("+OKDJG " + message);
             }else{
-                this.writeToClient("-ERR group not found");
+                this.sendToClient("-ERR group not found");
             }
 
         }catch (JSONException err){
@@ -218,9 +225,9 @@ public class ClientThread implements Runnable {
 
             if(group != null){
                 group.removeMember(this);
-                this.writeToClient("+OKLG " + message);
+                this.sendToClient("+OKLG " + message);
             }else{
-                this.writeToClient("-ERR group not found");
+                this.sendToClient("-ERR group not found");
             }
 
         }catch (JSONException err){
@@ -241,16 +248,16 @@ public class ClientThread implements Runnable {
                 if(group != null){
                     if(group.getOwner().equals(this)){
                         group.removeMember(user);
-                        this.writeToClient("+OKKICK " + groupName);
-                        user.writeToClient("BCST You have been kicked from " + groupName);
+                        this.sendToClient("+OKKICK " + groupName);
+                        user.sendToClient("BCST You have been kicked from " + groupName);
                     }else{
-                        this.writeToClient("-ERR you are not the owner of this group");
+                        this.sendToClient("-ERR you are not the owner of this group");
                     }
                 }else{
-                    this.writeToClient("-ERR group not found");
+                    this.sendToClient("-ERR group not found");
                 }
             }else{
-                this.writeToClient("-ERR user not found");
+                this.sendToClient("-ERR user not found");
             }
 
         }catch (JSONException err){
@@ -268,9 +275,9 @@ public class ClientThread implements Runnable {
 
             if(group != null){
                 group.broadCastMessage("{groupname: '" + groupName + "', sender: '" + this.username + "', message: '" + messageText + "'}");
-                this.writeToClient("+OKBCSTG " + groupName);
+                this.sendToClient("+OKBCSTG " + groupName);
             }else{
-                this.writeToClient("-ERR group not found");
+                this.sendToClient("-ERR group not found");
             }
 
         }catch (JSONException err){
@@ -278,7 +285,7 @@ public class ClientThread implements Runnable {
         }
     }
 
-    void writeToClient(String message) {
+    void sendToClient(String message) {
         PrintWriter writer = new PrintWriter(this.os);
         writer.println(message);
         writer.flush();
@@ -296,10 +303,10 @@ public class ClientThread implements Runnable {
             ClientThread receiver = server.getClientByName(reveiverName);
 
             if(receiver != null){
-                receiver.writeToClient("DM { username: '" + this.getUsername() + "', message: '" + payload + "'}");
-                this.writeToClient("+OKDM " + payload);
+                receiver.sendToClient("DM { username: '" + this.getUsername() + "', message: '" + payload + "'}");
+                this.sendToClient("+OKDM " + payload);
             }else{
-                this.writeToClient("-ERR user not found");
+                this.sendToClient("-ERR user not found");
             }
 
         }catch (JSONException err){

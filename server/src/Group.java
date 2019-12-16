@@ -5,20 +5,17 @@ public class Group {
     private ClientThread owner;
     private ArrayList<ClientThread> members;
 
-    private int id;
-    private static int idList = 0;
     private String name;
 
     public Group(ClientThread owner, String name){
         this.owner = owner;
-        this.id = idList++;
         this.name = name;
         members =new ArrayList<>();
     }
 
     public void addMember(ClientThread member){
         if(members.contains(member)){
-            member.writeToClient("-ERR already a member of this group");
+            member.sendToClient("-ERR already a member of this group");
         }else{
             members.add(member);
         }
@@ -28,14 +25,14 @@ public class Group {
         if(members.contains(member)){
             members.remove(member);
         }else {
-            member.writeToClient("-ERR not a member");
+            member.sendToClient("-ERR not a member");
         }
     }
 
     public void broadCastMessage(String line){
-        owner.writeToClient("BCSTG " + line);
+        owner.sendToClient("BCSTG " + line);
         for (ClientThread t:members) {
-            t.writeToClient("BCSTG " + line);
+            t.sendToClient("BCSTG " + line);
         }
     }
 
